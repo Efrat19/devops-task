@@ -1,0 +1,36 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "master.fullname" . }}-network-policy
+spec:
+  egress:
+  - to:
+   #allow egress traffic anywhere except 10.0.0.* and 10.0.1.*
+   #except 10.0.0.22 (mysql master) 
+   #except 10.0.0.23 (stats2 (devtools)) 
+    - ipBlock: 
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.64/26
+        - 10.0.0.32/27
+        - 10.0.0.0/28
+        - 10.0.0.24/29
+        - 10.0.0.16/30
+        - 10.0.0.20/31
+        - 10.0.0.128/26
+        - 10.0.0.192/27
+        - 10.0.0.224/28
+        - 10.0.0.248/29
+        - 10.0.0.240/30
+        - 10.0.0.246/31
+        - 10.0.0.245/32
+        - 10.0.0.244/32
+        - 10.0.0.23/32
+        - 10.0.1.0/24
+  podSelector: {}
+  policyTypes:
+  - Egress
+{{- end -}}
+
+

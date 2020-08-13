@@ -1,0 +1,11 @@
+{{- if .Values.antibot.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "master.fullname" . }}-antibot-ss2-config
+  labels:
+{{ include "master.labels" . | indent 4 }}
+data:
+  ss2_config.json: |
+{{ .Values.antibot.ss2_config | indent 4}}
+{{- end -}}

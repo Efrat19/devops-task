@@ -1,0 +1,18 @@
+{{- if .Values.antibot.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "master.fullname" . }}-antibot-svc
+  labels:
+{{ include "master.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.antibot.service.type }}
+  ports:
+    - port: {{ .Values.antibot.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "master.name" . }}-antibot
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

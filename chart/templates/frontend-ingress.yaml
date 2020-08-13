@@ -1,0 +1,43 @@
+{{- if .Values.frontend.enabled -}}
+{{- if .Values.frontend.ingress.enabled -}}
+{{- $fullName := include "master.fullname" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-frontend-ing
+  labels:
+{{ include "master.labels" . | indent 4 }}
+  {{- with .Values.frontend.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.frontend.ingress.headers.enabled }}
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+              more_set_headers "X-Frame-Options: SAMEORIGIN";
+              more_set_headers "X-Xss-Protection: 1";
+   {{- end }}
+spec:
+{{- if .Values.frontend.ingress.tls }}
+  tls:
+  {{- range .Values.frontend.ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range .Values.frontend.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range .paths }}
+          - path: {{ . }}
+            backend:
+              serviceName: {{ $fullName }}-frontend-svc
+              servicePort: http
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

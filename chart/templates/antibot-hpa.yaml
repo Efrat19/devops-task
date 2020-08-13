@@ -1,0 +1,24 @@
+{{- if .Values.antibot.enabled -}}
+{{- if .Values.antibot.hpa.enabled -}}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "master.fullname" . }}-antibot-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "master.fullname" . }}-antibot
+  minReplicas: {{ .Values.antibot.hpa.replicaMin }}
+  maxReplicas: {{ .Values.antibot.hpa.replicaMax }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: {{ .Values.antibot.hpa.targetAverageUtilization }}
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: {{ .Values.antibot.hpa.targetAverageUtilization }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,38 @@
+{{- if .Values.antibot.enabled }}
+{{- if .Values.antibot.ingress.enabled }}
+{{- $fullName := include "master.fullname" . -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-antibot-ing
+  labels:
+{{ include "master.labels" . | indent 4 }}
+  {{- with .Values.antibot.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if .Values.antibot.ingress.tls }}
+  tls:
+  {{- range .Values.antibot.ingress.tls }}
+    - hosts:
+      {{- range .hosts }}
+        - {{ . | quote }}
+      {{- end }}
+      secretName: {{ .secretName }}
+  {{- end }}
+{{- end }}
+  rules:
+  {{- range .Values.antibot.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+        {{- range .paths }}
+          - path: {{ . }}
+            backend:
+              serviceName: {{ $fullName }}-antibot-svc
+              servicePort: http
+        {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
