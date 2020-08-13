@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"os"
 	"strconv"
 	"time"
 
@@ -17,22 +19,9 @@ import (
 	"github.com/nlopes/slack"
 )
 
-func main() {
-
-	http.HandleFunc("/devops-on-duty", slashCommandHandler)
-	http.HandleFunc("/healthz", healthzHandler)
-	fmt.Println("[INFO] Server listening")
-	http.ListenAndServe(":8080", nil)
-}
-
-func healthzHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("[INFO] Receiving /healthz request")
-	w.WriteHeader(http.StatusOK)
-	return
-}
 
 func logRequest(user string ,userID string, devops string) {
-	webhook := getEnv("SLACK_WEBHOOK_URL","xxx")
+	webhook := os.Getenv("SLACK_WEBHOOK_URL")
 	fmt.Println("[INFO] Logging /devops-on-duty request")
 	fmt.Printf("%s (%s) just issued the /devops-on-duty command\n",user,userID)
 	attachment := slack.Attachment{
@@ -59,7 +48,7 @@ func logRequest(user string ,userID string, devops string) {
 
 func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("[INFO] Receiving /devops-on-duty request")
-	signingSecret := getEnv("SLACK_SIGNING_SECRET","")
+	signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
 	verifier, err := slack.NewSecretsVerifier(r.Header, signingSecret)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -80,19 +69,22 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	countRequest(s.Command,s.UserID)
 	switch s.Command {
-	case "/devops-on-duty":
-		err,onDuty := whoIsOnDutyNow()
-		var response string
+	case "/k-bot pods":
+		pods, err := getPodInfoList()
 		if err != nil {
-			fmt.Printf("[ERROR] Error finding DevOps on duty today %v",err)
-			response = "Error finding DevOps on duty today"
-			logRequest(s.UserName,s.UserID,"error")
-		} else {
-			response = fmt.Sprintf("%s is on duty today",onDuty)
-			logRequest(s.UserName,s.UserID,onDuty)
+			panic(err.Error())
 		}
+		var buffer bytes.Buffer
+		for _,pod := range *pods {
+			buffer.WriteString(fmt.Sprintf("pod %s uptime %s version %s\n",pod.Name,pod.Uptime,pod.Version))
+		}
+		response := buffer.String()
 		w.Write([]byte(response))
+	case "/k-bot logs service tail":
+		log := getServiceLog(20,"service")
+		w.Write([]byte(log))
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -10,6 +10,7 @@ jobs:
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
+          context: src
           name: efrat19/shifts-scheduler
           username: efrat19
           password: ${{ secrets.EFRAT19_DOCKER_PASSWORD }}
