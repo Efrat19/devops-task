@@ -12,6 +12,12 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+containerPort: "1012"
+logLevel: debug
+slackSigningSecret:
+  secretName: k-bot-slack
+  secretKey: signing-secret
+
 
 serviceAccount:
   # Specifies whether a service account should be created
