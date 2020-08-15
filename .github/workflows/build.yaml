@@ -11,5 +11,5 @@ jobs:
           context: src
           name: efrat19/k-bot
           username: efrat19
-          password: ${{ secrets.EFRAT19_DOCKER_PASSWORD }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
           tags: "latest,amd64-${{ github.sha }}"
