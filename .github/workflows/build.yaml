@@ -1,6 +1,4 @@
-
-
-name: Publish Shifts Scheduler
+name: Publish
 on: [push]
 jobs:
   build-amd64:
@@ -11,7 +9,7 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           context: src
-          name: efrat19/shifts-scheduler
+          name: efrat19/devops-task
           username: efrat19
           password: ${{ secrets.EFRAT19_DOCKER_PASSWORD }}
           tags: "latest,amd64-${{ github.sha }}"
