@@ -14,7 +14,7 @@ var requestLabels = []string{
 var (
 	counterVec = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "k-bot",
+			Namespace: "kbot",
 			Name:      "requests_total",
 			Help:      "monitor requests sent to k-bot",
 		},
