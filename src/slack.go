@@ -35,7 +35,7 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = verifier.Ensure(); err != nil {
-		log.Error("Invalid verfier")
+		log.Error("Invalid verifier")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
