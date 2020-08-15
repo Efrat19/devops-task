@@ -24,15 +24,90 @@ type PodInfo struct{
 	Version string
 }
 
-var (
+const (
 	namespace = "colors-2"
 	versionPath = "/api/version"
 )
 
+
+func getPodInfoList() (*[]PodInfo,error) {
+	log.Debugf("getPodInfoList called")
+	clientset,err := getClientSet()
+	if err != nil {
+		log.Error("Unable to getClientSet")
+		return nil, err
+	}
+	var podInfoList = []PodInfo{}
+	services, err := clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		log.Error("Unable to list services")
+		return nil, err
+	}
+	for _,service := range services.Items {
+		version,err := getVersionOf(&service)
+		if err != nil {
+			log.Error("Unable to get service version")
+			return nil, err
+		}
+		servicePods,err := getPodsOf(&service,clientset)
+		if err != nil {
+		}
+		for _,pod := range *servicePods {
+			podInfoList = append(podInfoList, PodInfo{
+				Name:    pod.Name,
+				Uptime:  getTimeSince(pod.Status.StartTime.Time),
+				Version: version,
+			})
+		}
+	}
+	return &podInfoList,err
+}
+
+
+func getServiceLog(tail int64,serviceName string) (string,error) {
+	log.Debugf("getServiceLog called with tail %d and serviceName %s",tail,serviceName)
+	clientset,err := getClientSet()
+	if err != nil {
+		log.Error("Unable to getClientSet")
+		return "", err
+	}
+	service, err := clientset.CoreV1().Services(namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
+	if err != nil {
+		log.Error("Unable to list services")
+		return "", err
+	}
+	servicePods,err := getPodsOf(service,clientset)
+	if err != nil {
+		log.Error("Unable to get service pods")
+		return "", err
+	}
+	if len(*servicePods) == 0 {
+		log.Error("service has no pods")
+		return "", fmt.Errorf("no pods found for service %s",serviceName)
+	}
+	podLogOpts := v1.PodLogOptions{TailLines:&tail}
+	req := clientset.CoreV1().Pods((*servicePods)[0].Namespace).GetLogs((*servicePods)[0].Name, &podLogOpts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		log.Error("error in opening stream")
+		return "", err
+	}
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		log.Error("error in copy information from podLogs to buf")
+		return "", err
+	}
+	str := buf.String()
+	return str,nil
+}
+
 func getVersionOf(service *v1.Service) (string,error) {
 	log.Debugf("getVersionOf called with service %s",service.Name)
 	if len(service.Spec.Ports) == 0 {
-		return "",fmt.Errorf("Unable to find version - Service %s has no specified ports",service.Name)
+		return "",fmt.Errorf("unable to find version - Service %s has no specified ports",service.Name)
 	}
 	port := service.Spec.Ports[0].Port
 	url := fmt.Sprintf("http://%s.%s.svc.cluster.local:%d%s",service.Name,service.Namespace,port,versionPath)
@@ -69,10 +144,10 @@ func getPodsOf(service *v1.Service,clientset *kubernetes.Clientset) (*[]v1.Pod,e
 		}
 		labelSelector = labelSelector.Add(*requirement)
 	}
-	runningnlyRule := "status.phase=Running"
+	runningOnlyRule := "status.phase=Running"
 	options := metav1.ListOptions{
 		LabelSelector:       labelSelector.String(),
-		FieldSelector:       runningnlyRule,
+		FieldSelector:       runningOnlyRule,
 	}
 	pods, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), options)
 	return &pods.Items,err
@@ -86,72 +161,6 @@ func getClientSet() (*kubernetes.Clientset,error) {
 		return nil,err
 	}
 	return kubernetes.NewForConfig(config)
-}
-
-func getPodInfoList() (*[]PodInfo,error) {
-	log.Debugf("getPodInfoList called")
-	clientset,err := getClientSet()
-	var podInfoList = []PodInfo{}
-	services, err := clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		log.Error("Unable to list services")
-		return nil, err
-	}
-	for _,service := range services.Items {
-		version,err := getVersionOf(&service)
-		if err != nil {
-			log.Error("Unable to get service version")
-			return nil, err
-		}
-		servicePods,err := getPodsOf(&service,clientset)
-		if err != nil {
-		}
-		for _,pod := range *servicePods {
-			podInfoList = append(podInfoList, PodInfo{
-				Name:    pod.Name,
-				Uptime:  getTimeSince(pod.Status.StartTime.Time),
-				Version: version,
-			})
-		}
-	}
-	return &podInfoList,err
-}
-
-
-func getServiceLog(tail int64,serviceName string) (string,error) {
-	log.Debugf("getServiceLog called with tail %d and serviceName %s",tail,serviceName)
-	clientset,err := getClientSet()
-	service, err := clientset.CoreV1().Services(namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
-	if err != nil {
-		log.Error("Unable to list services")
-		return "", err
-	}
-	servicePods,err := getPodsOf(service,clientset)
-	if err != nil {
-		log.Error("Unable to get service pods")
-		return "", err
-	}
-	if len(*servicePods) == 0 {
-		log.Error("service has no pods")
-		return "", fmt.Errorf("No pods found for service %s",serviceName)
-	}
-	podLogOpts := v1.PodLogOptions{TailLines:&tail}
-	req := clientset.CoreV1().Pods((*servicePods)[0].Namespace).GetLogs((*servicePods)[0].Name, &podLogOpts)
-	podLogs, err := req.Stream(context.Background())
-	if err != nil {
-		log.Error("error in opening stream")
-		return "", err
-	}
-	defer podLogs.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		log.Error("error in copy information from podLogs to buf")
-		return "", err
-	}
-	str := buf.String()
-	return str,nil
 }
 
 func getTimeSince(startTime time.Time) time.Duration {
