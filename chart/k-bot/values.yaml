@@ -5,7 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: efrat19/k-bot
+  tag: latest
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
