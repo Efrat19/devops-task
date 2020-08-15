@@ -2,52 +2,23 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
-	"strconv"
-	"time"
-
-	//"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-
-	//"log"
-	//"math"
 	"net/http"
-	//"github.com/joho/godotenv"
 	"github.com/nlopes/slack"
+	"strconv"
+	"strings"
+	"github.com/apex/log"
 )
 
-
-func logRequest(user string ,userID string, devops string) {
-	webhook := os.Getenv("SLACK_WEBHOOK_URL")
-	fmt.Println("[INFO] Logging /devops-on-duty request")
-	fmt.Printf("%s (%s) just issued the /devops-on-duty command\n",user,userID)
-	attachment := slack.Attachment{
-		Color:         "warning",
-		Fallback:      fmt.Sprintf("Heads up for %s: %s (%s) just issued the /devops-on-duty command",devops,user,userID),
-		//AuthorName:    "devops bot",
-		//AuthorSubname: "github.com",
-		//AuthorLink:    "https://github.com/nlopes/slack",
-		//AuthorIcon:    "https://avatars2.githubusercontent.com/u/652790",
-		Text:          fmt.Sprintf("Heads up for %s: %s just issued the /devops-on-duty command",devops,user),
-		//Footer:        "slack api",
-		//FooterIcon:    "https://platform.slack-edge.com/img/default_application_icon.png",
-		Ts:            json.Number(strconv.FormatInt(time.Now().Unix(), 10)),
-	}
-	msg := slack.WebhookMessage{
-		Attachments: []slack.Attachment{attachment},
-	}
-
-	err := slack.PostWebhook(webhook, &msg)
-	if err != nil {
-		fmt.Println(err)
-	}
-}
-
+const (
+	LOGS_COMMAND = "logs"
+	PODS_COMMAND = "pods"
+)
 func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("[INFO] Receiving /devops-on-duty request")
+	log.Info("Receiving /k-bot request")
 	signingSecret := os.Getenv("SLACK_SIGNING_SECRET")
 	verifier, err := slack.NewSecretsVerifier(r.Header, signingSecret)
 	if err != nil {
@@ -58,35 +29,86 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 	r.Body = ioutil.NopCloser(io.TeeReader(r.Body, &verifier))
 	s, err := slack.SlashCommandParse(r)
 	if err != nil {
-		fmt.Printf("[ERROR] on parsing: %v",err)
+		log.Errorf("On parsing: %v",err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if err = verifier.Ensure(); err != nil {
-		fmt.Printf("[ERROR] invalid verfier")
+		log.Error("Invalid verfier")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	countRequest(s.Command,s.UserID)
-	switch s.Command {
-	case "/k-bot pods":
-		pods, err := getPodInfoList()
-		if err != nil {
-			panic(err.Error())
-		}
-		var buffer bytes.Buffer
-		for _,pod := range *pods {
-			buffer.WriteString(fmt.Sprintf("pod %s uptime %s version %s\n",pod.Name,pod.Uptime,pod.Version))
-		}
-		response := buffer.String()
+	command,err := getCommandName(s.Command)
+	if err != nil {
+		response := "Available commands are:\nk-bot pods\nk-bot logs [service] [tail]"
 		w.Write([]byte(response))
-	case "/k-bot logs service tail":
-		log := getServiceLog(20,"service")
-		w.Write([]byte(log))
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+	} else {
+		switch command {
+		case PODS_COMMAND:
+			response, err := getKbotPods()
+			if err != nil {
+				log.Error("Unable to getKbotPods")
+				panic(err.Error())
+			}
+			w.Write([]byte(response))
+		case LOGS_COMMAND:
+			response,err := getKbotLogs(s.Command)
+			if err != nil {
+				log.Error("Unable to getKbotLogs")
+				panic(err.Error())
+			}
+			w.Write([]byte(response))
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
+
+}
+
+func getCommandName(userCammnd string) (string,error) {
+	splittedCommand := strings.Split(userCammnd, " ")
+	if len(splittedCommand) < 2 {
+		return "",fmt.Errorf("No Command specified\n")
+	}
+	return splittedCommand[1],nil
+}
+
+func getKbotLogs(command string) (string,error) {
+	splittedCommand := strings.Split(command, " ")
+	if len(splittedCommand) < 3 {
+		return "",fmt.Errorf("No service specified for logs\n")
+	}
+	tail := 10
+	if len(splittedCommand) < 4 {
+		log.Warn("No tail specified, defaulting to 10\n")
+	} else {
+		tail, err := strconv.Atoi(splittedCommand[3])
+		if err != nil {
+			log.Warn("No valid tail specified, defaulting to 10\n")
+			tail = 10
+		} else {
+			tail = tail
+		}
+	}
+	return getServiceLog(int64(tail),splittedCommand[2])
+}
+
+
+
+func getKbotPods() (string,error) {
+	pods, err := getPodInfoList()
+	if err != nil {
+		log.Error("Unable to getPodInfoList")
+		return "",err
+	}
+	var buffer bytes.Buffer
+	for _,pod := range *pods {
+		buffer.WriteString(fmt.Sprintf("pod %s uptime %s version %s\n",pod.Name,pod.Uptime,pod.Version))
+	}
+	response := buffer.String()
+	return response,nil
 }

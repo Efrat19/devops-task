@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"os"
+	"github.com/apex/log"
 )
 
 var requestLabels = []string{
@@ -22,6 +23,7 @@ var (
 )
 
 func countRequest(command string,userID string){
+	log.Debugf("countRequest called with command %s and userID %s",command,userID)
 	labels := []string{command,userID}
 	counterVec.WithLabelValues(labels...).Add(1)
 }
