@@ -12,7 +12,7 @@ slack chatbot
   - accept slash command
 - [X] expose metrics
   - requests counter
-- [ ] tests
-- [ ] errors handling
-- [ ] logs
+- [X] tests
+- [X] errors handling
+- [X] logs
 
