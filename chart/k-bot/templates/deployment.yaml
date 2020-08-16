@@ -28,15 +28,15 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: PORT
-              value: {{ .Values.containerPort }}
-            - name: LOG_LEVEL
-              value: {{ .Values.logLevel }}
-            - name: SLACK_SIGNING_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.slackSigningSecret.secretName }}
-                  key: {{ .Values.slackSigningSecret.secretKey }}
+          - name: PORT
+            value: {{ .Values.containerPort | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel }}
+          - name: SLACK_SIGNING_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.slackSigningSecret.secretName }}
+                key: {{ .Values.slackSigningSecret.secretKey }}
           ports:
             - name: http
               containerPort: {{ .Values.containerPort }}

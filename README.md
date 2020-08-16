@@ -27,8 +27,23 @@ In addition to usage metrics, a custom metric is also exported:
 - *Labels:* command, userID
 
 ## Installation 
-Via the [helm chart](./chart). In `values.yaml`, you will have to provide the ingress host name, slack signing secret details, and enable rbac if your cluster needs it.
+- create the signing secret (from slack)
+```console
+~ $ k create secret generic k-bot-slack-secret --from-literal secret=b6a820484449446cbb7c31fca384f7f1 
+```
+- Install the [helm3 chart](./chart). In `values.yaml`, you will have to provide the ingress host name, slack signing secret details, and enable rbac if your cluster needs it.
+```console
+~ $ helm3 install chart/k-bot --generate-name --namespace default
+NAME: k-bot-1597572730
+LAST DEPLOYED: Sun Aug 16 13:12:13 2020
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  http://k-bot.yad2.io/
 
+```
 ## Tests
 ```console
 ~ $ cd src

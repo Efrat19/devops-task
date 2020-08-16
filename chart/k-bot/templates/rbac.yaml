@@ -27,5 +27,5 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "k-bot.serviceAccountName" . }}
-    namespace: {{.Release.namespace}}
+    namespace: {{.Release.Namespace}}
 {{- end -}}
