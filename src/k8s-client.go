@@ -38,7 +38,9 @@ func getPodInfoList() (*[]PodInfo,error) {
 		return nil, err
 	}
 	var podInfoList = []PodInfo{}
-	services, err := clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
+	services, err := clientset.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{
+		FieldSelector: "spec.type=ExternalName",
+	})
 	if err != nil {
 		log.Error("Unable to list services")
 		return nil, err
