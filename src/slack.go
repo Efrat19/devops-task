@@ -40,8 +40,8 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countRequest(s.Command,s.UserID)
-	command,err := getCommandName(s.Command)
+	countRequest(s.Text,s.UserID)
+	command,err := getCommandName(s.Text)
 	if err != nil {
 		response := "Available commands are:\nk-bot pods\nk-bot logs [service] [tail]"
 		w.Write([]byte(response))
@@ -55,7 +55,7 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Write([]byte(response))
 		case LOGS_COMMAND:
-			response,err := getKbotLogs(s.Command)
+			response,err := getKbotLogs(s.Text)
 			if err != nil {
 				log.Error("Unable to getKbotLogs")
 				panic(err.Error())
