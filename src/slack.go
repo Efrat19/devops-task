@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"github.com/apex/log"
+	"github.com/olekukonko/tablewriter"
 )
 
 const (
@@ -77,7 +78,7 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 func getCommandFirstArg(fullCommand string) (string,error) {
 	log.Debugf("getCommandName called with userCommand %s",fullCommand)
 	splittedCommand := strings.Split(fullCommand, " ")
-	if len(splittedCommand) < 1 {
+	if splittedCommand[0] == "" {
 		return "",fmt.Errorf("No Command arg specified\n")
 	}
 	return splittedCommand[0],nil
@@ -102,7 +103,7 @@ func getKbotLogs(command string) (string,error) {
 			return getServiceLog(int64(tail),splittedCommand[SERVICE_ARG_INDEX])
 		}
 	}
-	return getServiceLog(int64(tail),splittedCommand[1])
+	return getServiceLog(int64(tail),splittedCommand[SERVICE_ARG_INDEX])
 }
 
 
@@ -113,12 +114,23 @@ func getKbotPods() (string,error) {
 		log.Error("Unable to getPodInfoList")
 		return "",err
 	}
+	return formatPodsTable(pods),nil
+}
+
+func formatPodsTable(pods *[]PodInfo) string {
+	podsTableData := [][]string{}
 	var buffer bytes.Buffer
 	buffer.WriteString("```\n")
 	for _,pod := range *pods {
-		buffer.WriteString(fmt.Sprintf("*pod* %s *uptime* %s *version* %s\n",pod.Name,pod.Uptime,pod.Version))
+		podsTableData = append(podsTableData, []string{pod.Name,pod.Uptime.String(),pod.Version})
 	}
+	log.Debugf("podsTableData: %v",podsTableData)
+	table := tablewriter.NewWriter(&buffer)
+	table.SetHeader([]string{"Name", "Uptime", "Version"})
+	for _, v := range podsTableData {
+		table.Append(v)
+	}
+	table.Render()
 	buffer.WriteString("```\n")
-	response := buffer.String()
-	return response,nil
+	return buffer.String()
 }

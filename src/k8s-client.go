@@ -100,8 +100,9 @@ func getServiceLog(tail int64,serviceName string) (string,error) {
 		log.Error("error in copy information from podLogs to buf")
 		return "", err
 	}
-	str := buf.String()
-	return str,nil
+	margins := "```"
+	formattedString := fmt.Sprintf("%s\n%s\n%s",margins,buf.String(),margins)
+	return formattedString,nil
 }
 
 func getServiceVersion(service *v1.Service) (string,error) {
