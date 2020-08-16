@@ -127,9 +127,9 @@ func formatPodsTable(pods *[]PodInfo) string {
 	log.Debugf("podsTableData: %v",podsTableData)
 	table := tablewriter.NewWriter(&buffer)
 	table.SetHeader([]string{"Name", "Uptime", "Version"})
-	for _, v := range podsTableData {
-		table.Append(v)
-	}
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	table.AppendBulk(podsTableData) // Add Bulk Data
 	table.Render()
 	buffer.WriteString("```\n")
 	return buffer.String()
