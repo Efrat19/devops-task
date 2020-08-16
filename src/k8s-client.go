@@ -44,12 +44,12 @@ func getPodInfoList() (*[]PodInfo,error) {
 		return nil, err
 	}
 	for _,service := range services.Items {
-		version,err := getVersionOf(&service)
+		version,err := getServiceVersion(&service)
 		if err != nil {
 			log.Errorf("Unable to get service version\n%v",err)
 			continue
 		}
-		servicePods,err := getPodsOf(&service,clientset)
+		servicePods,err := getServicePods(&service,clientset)
 		if err != nil {
 		}
 		for _,pod := range *servicePods {
@@ -76,7 +76,7 @@ func getServiceLog(tail int64,serviceName string) (string,error) {
 		log.Error("Unable to list services")
 		return "", err
 	}
-	servicePods,err := getPodsOf(service,clientset)
+	servicePods,err := getServicePods(service,clientset)
 	if err != nil {
 		log.Error("Unable to get service pods")
 		return "", err
@@ -104,7 +104,7 @@ func getServiceLog(tail int64,serviceName string) (string,error) {
 	return str,nil
 }
 
-func getVersionOf(service *v1.Service) (string,error) {
+func getServiceVersion(service *v1.Service) (string,error) {
 	log.Debugf("getVersionOf called with service %s",service.Name)
 	if len(service.Spec.Ports) == 0 {
 		return "",fmt.Errorf("unable to find version - Service %s has no specified ports",service.Name)
@@ -133,7 +133,7 @@ func getVersionOf(service *v1.Service) (string,error) {
 }
 
 
-func getPodsOf(service *v1.Service,clientset *kubernetes.Clientset) (*[]v1.Pod,error) {
+func getServicePods(service *v1.Service,clientset *kubernetes.Clientset) (*[]v1.Pod,error) {
 	log.Debugf("getPodsOf called with service %s",service.Name)
 	labelSelector := labels.NewSelector()
 	for labelKey, labelVal := range service.Spec.Selector {
