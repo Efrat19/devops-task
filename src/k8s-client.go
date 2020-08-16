@@ -25,7 +25,7 @@ type PodInfo struct{
 }
 
 const (
-	namespace = "default"
+	namespace = "k-bot-test"
 	versionPath = "/api/version"
 )
 
