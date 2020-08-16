@@ -46,8 +46,8 @@ func getPodInfoList() (*[]PodInfo,error) {
 	for _,service := range services.Items {
 		version,err := getVersionOf(&service)
 		if err != nil {
-			log.Error("Unable to get service version")
-			return nil, err
+			log.Errorf("Unable to get service version\n%v",err)
+			continue
 		}
 		servicePods,err := getPodsOf(&service,clientset)
 		if err != nil {
