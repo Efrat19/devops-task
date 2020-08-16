@@ -25,7 +25,7 @@ type PodInfo struct{
 }
 
 const (
-	namespace = "colors-2"
+	namespace = "default"
 	versionPath = "/api/version"
 )
 
