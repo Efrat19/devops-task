@@ -116,7 +116,7 @@ func getKbotPods() (string,error) {
 	var buffer bytes.Buffer
 	buffer.WriteString("```\n")
 	for _,pod := range *pods {
-		buffer.WriteString(fmt.Sprintf("pod %s uptime %s version %s\n",pod.Name,pod.Uptime,pod.Version))
+		buffer.WriteString(fmt.Sprintf("*pod* %s *uptime* %s *version* %s\n",pod.Name,pod.Uptime,pod.Version))
 	}
 	buffer.WriteString("```\n")
 	response := buffer.String()
