@@ -9,14 +9,14 @@ slack chatbot
 ```console
 /k-bot pods
 ```
-<img src="./resources/pods-command.png"  width="100"> 
-<img src="./resources/pods-response.png"  width="600"> 
+<img src="./resources/pods-command.png"  width="200"> 
+<img src="./resources/pods-response.png"  width="650"> 
 
 ```console
 /k-bot logs [service] [tail]
 ```
-<img src="./resources/logs-command.png"  width="100"> 
-<img src="./resources/logs-response.png"  width="600"> 
+<img src="./resources/logs-command.png"  width="200"> 
+<img src="./resources/logs-response.png"  width="650"> 
 
 ## metrics:
 
@@ -41,7 +41,7 @@ STATUS: deployed
 REVISION: 1
 NOTES:
 1. Get the application URL by running these commands:
-  http://k-bot.yad2.io/
+  http://k-bot.yourdomain.io/
 
 ```
 ## Tests
