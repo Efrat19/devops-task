@@ -144,6 +144,7 @@ func getPodsOf(service *v1.Service,clientset *kubernetes.Clientset) (*[]v1.Pod,e
 		}
 		labelSelector = labelSelector.Add(*requirement)
 	}
+	log.Debugf("labelSelector: %s",labelSelector.String())
 	runningOnlyRule := "status.phase=Running"
 	options := metav1.ListOptions{
 		LabelSelector:       labelSelector.String(),
