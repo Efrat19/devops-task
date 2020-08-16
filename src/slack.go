@@ -88,11 +88,13 @@ func getKbotLogs(command string) (string,error) {
 		log.Warn("No tail specified, defaulting to 10\n")
 	} else {
 		tail, err := strconv.Atoi(splittedCommand[2])
+		log.Infof("tail from command: %d",tail)
 		if err != nil {
 			log.Warn("No valid tail specified, defaulting to 10\n")
 			tail = 10
 		} else {
 			tail = tail
+			log.Infof("tail is: %d",tail)
 		}
 	}
 	return getServiceLog(int64(tail),splittedCommand[1])
