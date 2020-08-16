@@ -87,7 +87,7 @@ func getKbotLogs(command string) (string,error) {
 	if len(splittedCommand) < 3 {
 		log.Warn("No tail specified, defaulting to 10\n")
 	} else {
-		tail, err := strconv.Atoi(splittedCommand[3])
+		tail, err := strconv.Atoi(splittedCommand[2])
 		if err != nil {
 			log.Warn("No valid tail specified, defaulting to 10\n")
 			tail = 10
