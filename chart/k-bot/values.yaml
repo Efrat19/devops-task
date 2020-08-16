@@ -18,6 +18,8 @@ slackSigningSecret:
   secretName: k-bot-slack
   secretKey: signing-secret
 
+rbac:
+  enabled: false
 
 serviceAccount:
   # Specifies whether a service account should be created
