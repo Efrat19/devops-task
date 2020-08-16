@@ -9,14 +9,14 @@ slack chatbot
 ```console
 /k-bot pods
 ```
-<img src="./resources/pods-command.png"  width="300"> 
-<img src="./resources/pods-response.png"  width="800"> 
+<img src="./resources/pods-command.png"  width="100"> 
+<img src="./resources/pods-response.png"  width="600"> 
 
 ```console
 /k-bot logs [service] [tail]
 ```
-<img src="./resources/logs-command.png"  width="300"> 
-<img src="./resources/logs-response.png"  width="800"> 
+<img src="./resources/logs-command.png"  width="100"> 
+<img src="./resources/logs-response.png"  width="600"> 
 
 ## metrics:
 
