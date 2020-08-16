@@ -8,14 +8,14 @@ slack chatbot
 ```console
 /k-bot pods
 ```
-<img src="./resources/logs-command.png"  width="500"> 
-<img src="./resources/logs-response.png"  width="500"> 
+<img src="./resources/logs-command.png"  width="300"> 
+<img src="./resources/logs-response.png"  width="800"> 
 
 ```console
 /k-bot logs [service] [tail]
 ```
-<img src="./resources/pods-command.png"  width="500"> 
-<img src="./resources/pods-response.png"  width="500"> 
+<img src="./resources/pods-command.png"  width="300"> 
+<img src="./resources/pods-response.png"  width="800"> 
 
 ## Installation 
 Via the [helm chart](./chart)
