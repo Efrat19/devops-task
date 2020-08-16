@@ -16,6 +16,11 @@ import (
 const (
 	LOGS_COMMAND = "logs"
 	PODS_COMMAND = "pods"
+
+	// logs command args
+	SERVICE_ARG_INDEX = 1
+	TAIL_ARG_INDEX = 2
+	DEFAULT_TAIL_VALUE = 10
 )
 func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("Receiving /k-bot request")
@@ -41,7 +46,7 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	countRequest(s.Text,s.UserID)
-	command,err := getCommandName(s.Text)
+	command,err := getCommandFirstArg(s.Text)
 	if err != nil {
 		response := "Available commands are:\nk-bot pods\nk-bot logs [service] [tail]"
 		w.Write([]byte(response))
@@ -69,32 +74,32 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func getCommandName(userCammnd string) (string,error) {
-	log.Debugf("getCommandName called with userCommand %s",userCammnd)
-	splittedCommand := strings.Split(userCammnd, " ")
+func getCommandFirstArg(fullCommand string) (string,error) {
+	log.Debugf("getCommandName called with userCommand %s",fullCommand)
+	splittedCommand := strings.Split(fullCommand, " ")
 	if len(splittedCommand) < 1 {
-		return "",fmt.Errorf("No Command specified\n")
+		return "",fmt.Errorf("No Command arg specified\n")
 	}
 	return splittedCommand[0],nil
 }
 
 func getKbotLogs(command string) (string,error) {
 	splittedCommand := strings.Split(command, " ")
-	if len(splittedCommand) < 2 {
+	if len(splittedCommand) < SERVICE_ARG_INDEX+1 {
 		return "",fmt.Errorf("No service specified for logs\n")
 	}
-	tail := 10
-	if len(splittedCommand) < 3 {
+	tail := DEFAULT_TAIL_VALUE
+	if len(splittedCommand) < TAIL_ARG_INDEX+1 {
 		log.Warn("No tail specified, defaulting to 10\n")
 	} else {
-		tail, err := strconv.Atoi(splittedCommand[2])
+		tail, err := strconv.Atoi(splittedCommand[TAIL_ARG_INDEX])
 		log.Infof("tail from command: %d",tail)
 		if err != nil {
 			log.Warn("No valid tail specified, defaulting to 10\n")
-			tail = 10
+			tail = DEFAULT_TAIL_VALUE
 		} else {
 			log.Infof("tail is: %d",tail)
-			return getServiceLog(int64(tail),splittedCommand[1])
+			return getServiceLog(int64(tail),splittedCommand[SERVICE_ARG_INDEX])
 		}
 	}
 	return getServiceLog(int64(tail),splittedCommand[1])
