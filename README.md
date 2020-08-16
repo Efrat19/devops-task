@@ -29,7 +29,7 @@ In addition to usage metrics, a custom metric is also exported:
 ## Installation 
 - create the signing secret (from slack)
 ```console
-~ $ k create secret generic k-bot-slack-secret --from-literal secret=b6a820484449446cbb7c31fca384f7f1 
+~ $ k create secret generic k-bot-slack-secret --from-literal secret=xxxxxx 
 ```
 - Install the [helm3 chart](./chart). In `values.yaml`, you will have to provide the ingress host name, slack signing secret details, and enable rbac if your cluster needs it.
 ```console
