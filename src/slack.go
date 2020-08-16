@@ -72,19 +72,19 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 func getCommandName(userCammnd string) (string,error) {
 	log.Debugf("getCommandName called with userCommand %s",userCammnd)
 	splittedCommand := strings.Split(userCammnd, " ")
-	if len(splittedCommand) < 2 {
+	if len(splittedCommand) < 1 {
 		return "",fmt.Errorf("No Command specified\n")
 	}
-	return splittedCommand[1],nil
+	return splittedCommand[0],nil
 }
 
 func getKbotLogs(command string) (string,error) {
 	splittedCommand := strings.Split(command, " ")
-	if len(splittedCommand) < 3 {
+	if len(splittedCommand) < 2 {
 		return "",fmt.Errorf("No service specified for logs\n")
 	}
 	tail := 10
-	if len(splittedCommand) < 4 {
+	if len(splittedCommand) < 3 {
 		log.Warn("No tail specified, defaulting to 10\n")
 	} else {
 		tail, err := strconv.Atoi(splittedCommand[3])
