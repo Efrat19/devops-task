@@ -95,7 +95,7 @@ func getKbotLogs(command string) (string,error) {
 			tail = tail
 		}
 	}
-	return getServiceLog(int64(tail),splittedCommand[2])
+	return getServiceLog(int64(tail),splittedCommand[1])
 }
 
 
