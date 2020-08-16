@@ -70,6 +70,7 @@ func slashCommandHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getCommandName(userCammnd string) (string,error) {
+	log.Debugf("getCommandName called with userCommand %s",userCammnd)
 	splittedCommand := strings.Split(userCammnd, " ")
 	if len(splittedCommand) < 2 {
 		return "",fmt.Errorf("No Command specified\n")
